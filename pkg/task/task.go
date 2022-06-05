@@ -18,7 +18,7 @@ func (t *Task) Unload(unload float32) {
 }
 
 func NewTaskRand(name string) *Task {
-	return &Task{name: name, weight: rand.Float32()*90 + 10}
+	return &Task{name: name, weight: rand.Float32()*70 + 10}
 }
 
 func NewTask(name string, weight float32) *Task {

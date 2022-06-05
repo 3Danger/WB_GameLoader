@@ -1,25 +1,30 @@
 package loader
 
 import (
-	"GameLoaders/pkg/wallet"
+	. "GameLoaders/pkg/_interfaces"
+	. "GameLoaders/pkg/wallet"
 	"errors"
 	"math/rand"
 )
 
 type Loader struct {
-	wallet.IWallet
+	IWallet
+	name           string
 	maxWeightTrans float32 //5-30kg
-	salary         int     //ЗП
+	salary         float32 //ЗП
 	fatigue        float32 //усталость
 	drunk          bool
 }
 
-func NewLoader() *Loader {
+func (l Loader) Salary() float32 { return l.salary }
+
+func NewLoader(name string) *Loader {
 	drunk := rand.Int()&1 == 0
 	return &Loader{
-		IWallet:        wallet.NewWallet(0),
+		name:           name,
+		IWallet:        NewWallet(0),
 		maxWeightTrans: rand.Float32()*25 + 5,
-		salary:         rand.Intn(20) + 10,
+		salary:         rand.Float32()*20 + 10,
 		fatigue:        0.0,
 		drunk:          drunk,
 	}
@@ -36,16 +41,12 @@ func (l Loader) CanMoveWeight() float32 {
 	return l.maxWeightTrans * (1.0 - fatigue)
 }
 
-type IUnload interface {
-	Unload(unload float32)
-}
-
-func (l *Loader) Unload(task IUnload) error {
+func (l *Loader) Unload(task Unloadable) error {
 	//- формула рассчета переносимого веса
 	// (вес*(100 - усталость/100)*(пьянство/100))
 	canMoveWeight := l.CanMoveWeight()
 	if canMoveWeight <= 0. {
-		return errors.New("the loader is very tired")
+		return errors.New(l.name + " is very tired")
 	}
 	task.Unload(canMoveWeight)
 	l.fatigue += 0.2

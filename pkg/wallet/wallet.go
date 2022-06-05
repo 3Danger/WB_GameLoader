@@ -1,34 +1,29 @@
 package wallet
 
 import (
+	. "GameLoaders/pkg/_interfaces"
 	"errors"
 )
 
-type IWallet interface {
-	SendTo(int, IWallet) error
-	Get() int
-	Receive(int)
-}
-
 type Wallet struct {
-	money int
+	money float32
 }
 
-func NewWallet(money int) *Wallet { return &Wallet{money: money} }
+func NewWallet(money float32) *Wallet { return &Wallet{money: money} }
 
-func (w *Wallet) SendTo(money int, wallet IWallet) error {
+func (w *Wallet) SendTo(money float32, wallet IWallet) error {
 	if w.money < money {
-		return errors.New("insufficient funds")
+		return errors.New("not enough money")
 	}
 	w.money -= money
 	wallet.Receive(money)
 	return nil
 }
 
-func (w Wallet) Get() int {
+func (w Wallet) Get() float32 {
 	return w.money
 }
 
-func (w *Wallet) Receive(money int) {
+func (w *Wallet) Receive(money float32) {
 	w.money += money
 }
