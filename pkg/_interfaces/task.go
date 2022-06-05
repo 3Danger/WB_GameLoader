@@ -16,4 +16,5 @@ type ITask interface {
 	Unloadable
 	Weightable
 	IHasMoved
+	Name() string
 }

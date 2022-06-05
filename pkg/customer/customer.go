@@ -29,7 +29,7 @@ func NewCustomer(money float32, name string) *Customer {
 func (c *Customer) Start() (ok error) {
 	var okLoader error
 	loaders := c.loaders
-	chainTasks := new(ChainOfTaskBuilder).Add(c.tasks...).Build()
+	chainTasks := new(chainOfTaskBuilder).Add(c.tasks...).Build()
 	for _, l := range loaders {
 		for okLoader == nil {
 			okLoader = l.Unload(chainTasks)
@@ -42,7 +42,7 @@ func (c *Customer) Start() (ok error) {
 	if chainTasks.HasMoved() {
 		return nil
 	}
-	return errors.New("last task failed!")
+	return errors.New("last task \"" + chainTasks.Name() + "\" failed!")
 }
 
 func (c *Customer) HireLoader(loaders ILoader) (ok error) {

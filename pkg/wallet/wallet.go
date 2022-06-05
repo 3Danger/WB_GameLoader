@@ -20,7 +20,7 @@ func (w *Wallet) SendTo(money float32, wallet IWallet) error {
 	return nil
 }
 
-func (w Wallet) Get() float32 {
+func (w Wallet) GetInfo() float32 {
 	return w.money
 }
 

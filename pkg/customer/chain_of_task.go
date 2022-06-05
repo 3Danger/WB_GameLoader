@@ -5,17 +5,17 @@ import (
 	"sort"
 )
 
-type ChainOfTaskBuilder struct {
+type chainOfTaskBuilder struct {
 	tasks []ITask
 }
 
-func (c *ChainOfTaskBuilder) Add(task ...ITask) *ChainOfTaskBuilder {
+func (c *chainOfTaskBuilder) Add(task ...ITask) *chainOfTaskBuilder {
 	c.tasks = append(c.tasks, task...)
 	return c
 }
 
-func (c *ChainOfTaskBuilder) Build() *ChaiOfTask {
-	var head, last *ChaiOfTask
+func (c *chainOfTaskBuilder) Build() *chaiOfTask {
+	var head, last *chaiOfTask
 	if len(c.tasks) == 0 {
 		return nil
 	}
@@ -23,21 +23,21 @@ func (c *ChainOfTaskBuilder) Build() *ChaiOfTask {
 		return c.tasks[i].Weight() > c.tasks[j].Weight()
 	})
 
-	head = &ChaiOfTask{c.tasks[0], nil}
+	head = &chaiOfTask{c.tasks[0], nil}
 	last = head
 	for _, v := range c.tasks[1:] {
-		last.next = &ChaiOfTask{v, nil}
+		last.next = &chaiOfTask{v, nil}
 		last = last.next
 	}
 	return head
 }
 
-type ChaiOfTask struct {
+type chaiOfTask struct {
 	ITask
-	next *ChaiOfTask
+	next *chaiOfTask
 }
 
-func (c *ChaiOfTask) Unload(unload float32) {
+func (c *chaiOfTask) Unload(unload float32) {
 	c.ITask.Unload(unload)
 	if c.HasMoved() {
 		if c.next != nil {
