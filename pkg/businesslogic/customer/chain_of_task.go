@@ -1,22 +1,27 @@
 package customer
 
 import (
-	. "GameLoaders/pkg/_interfaces"
+	. "GameLoaders/pkg/businesslogic/_interfaces"
 	"sort"
+	"sync"
 )
 
 type chainOfTaskBuilder struct {
+	sync.RWMutex
 	tasks []ITask
 }
 
 func (c *chainOfTaskBuilder) Add(task ...ITask) *chainOfTaskBuilder {
+	if len(task) < 1 {
+		return nil
+	}
 	c.tasks = append(c.tasks, task...)
 	return c
 }
 
 func (c *chainOfTaskBuilder) Build() *chaiOfTask {
 	var head, last *chaiOfTask
-	if len(c.tasks) == 0 {
+	if c == nil || len(c.tasks) == 0 {
 		return nil
 	}
 	sort.Slice(c.tasks, func(i, j int) bool {

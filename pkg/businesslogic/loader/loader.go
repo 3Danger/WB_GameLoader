@@ -1,14 +1,16 @@
 package loader
 
 import (
-	. "GameLoaders/pkg/_interfaces"
-	. "GameLoaders/pkg/wallet"
+	. "GameLoaders/pkg/businesslogic/_interfaces"
+	. "GameLoaders/pkg/businesslogic/wallet"
 	"errors"
 	"math/rand"
+	"sync"
 )
 
 type Loader struct {
 	IWallet
+	sync.RWMutex
 	name           string
 	maxWeightTrans float32 //5-30kg
 	salary         float32 //ЗП
@@ -16,7 +18,11 @@ type Loader struct {
 	drunk          bool
 }
 
-func (l Loader) Salary() float32 { return l.salary }
+func (l *Loader) Salary() float32 {
+	l.RLock()
+	defer l.RUnlock()
+	return l.salary
+}
 
 func NewLoader(name string) *Loader {
 	drunk := rand.Int()&1 == 0
@@ -30,18 +36,20 @@ func NewLoader(name string) *Loader {
 	}
 }
 
-func (l Loader) CanMoveWeight() float32 {
+func (l *Loader) CanMoveWeight() float32 {
+	l.RLock()
 	fatigue := l.fatigue
 	if l.drunk {
 		fatigue += 0.5
 	}
+	l.RUnlock()
 	if fatigue > 1.0 {
 		fatigue = 1.0
 	}
 	return l.maxWeightTrans * (1.0 - fatigue)
 }
 
-func (l *Loader) Unload(task Unloadable) error {
+func (l *Loader) Unload(task ITask) error {
 	//- формула рассчета переносимого веса
 	// (вес*(100 - усталость/100)*(пьянство/100))
 	canMoveWeight := l.CanMoveWeight()
@@ -49,6 +57,8 @@ func (l *Loader) Unload(task Unloadable) error {
 		return errors.New(l.name + " is very tired")
 	}
 	task.Unload(canMoveWeight)
+	l.Lock()
 	l.fatigue += 0.2
+	l.Unlock()
 	return nil
 }

@@ -1,10 +1,14 @@
 package main
 
 import (
-	"GameLoaders/pkg/customer"
-	"GameLoaders/pkg/loader"
-	"GameLoaders/pkg/task"
+	"GameLoaders/pkg/businesslogic/customer"
+	"GameLoaders/pkg/businesslogic/loader"
+	"GameLoaders/pkg/businesslogic/task"
+	"GameLoaders/pkg/httpserv/user/account"
+	"GameLoaders/pkg/httpserv/user/loaderAcc"
+	"encoding/json"
 	"fmt"
+	"github.com/spf13/viper"
 	"log"
 	"math/rand"
 	"time"
@@ -32,16 +36,38 @@ func GenerateTasks() []*task.Task {
 }
 
 func main() {
+	loader := loaderAcc.NewUser(account.NewAccount("123", "loaderee", "loader", "qwe", false), loader.NewLoader("loader"))
+	fmt.Println(loader.Loader.CanMoveWeight())
+	a, _ := json.Marshal(loader.Loader)
+	fmt.Println(string(a))
+}
+
+func main2() {
+	if ok := initConfig(); ok != nil {
+		log.Fatalln(ok)
+	}
 	tasks := GenerateTasks()
 	loaders := GenerateLoaders()
-	client := customer.NewCustomer(100.000, "Client")
-	for _, v := range tasks {
-		client.AddTask(v)
+	client := customer.NewCustomer(100.000, "Client one")
+	client2 := customer.NewCustomer(20.000, "Client two")
+	for i, v := range tasks {
+		if i%2 == 0 {
+			client.AddTask(v)
+		} else {
+			client2.AddTask(v)
+		}
 	}
-	for _, v := range loaders {
-		if ok := client.HireLoader(v); ok != nil {
-			fmt.Println(ok)
-			break
+	for i, v := range loaders {
+		if i%2 == 0 {
+			if ok := client.HireLoader(v); ok != nil {
+				fmt.Println(ok)
+				break
+			}
+		} else {
+			if ok := client2.HireLoader(v); ok != nil {
+				fmt.Println(ok)
+				break
+			}
 		}
 	}
 	if ok := client.Start(); ok != nil {
@@ -49,4 +75,15 @@ func main() {
 	} else {
 		log.Println("success")
 	}
+	if ok := client2.Start(); ok != nil {
+		log.Println(ok)
+	} else {
+		log.Println("success")
+	}
+}
+
+func initConfig() (ok error) {
+	viper.AddConfigPath("configs")
+	viper.SetConfigFile("server")
+	return viper.ReadInConfig()
 }

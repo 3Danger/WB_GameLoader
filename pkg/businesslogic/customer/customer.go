@@ -1,20 +1,24 @@
 package customer
 
 import (
-	. "GameLoaders/pkg/_interfaces"
-	. "GameLoaders/pkg/wallet"
+	. "GameLoaders/pkg/businesslogic/_interfaces"
+	. "GameLoaders/pkg/businesslogic/wallet"
 	"errors"
+	"sync"
 )
 
 type Customer struct {
 	IWallet
+	sync.RWMutex
 	name    string
 	tasks   []ITask
 	loaders []ILoader
 }
 
 func (c *Customer) AddTask(task ITask) *Customer {
+	c.Lock()
 	c.tasks = append(c.tasks, task)
+	c.Unlock()
 	return c
 }
 
@@ -29,13 +33,16 @@ func NewCustomer(money float32, name string) *Customer {
 func (c *Customer) Start() (ok error) {
 	var okLoader error
 	loaders := c.loaders
+	if len(c.tasks) == 0 {
+		return errors.New("there is no task")
+	}
 	chainTasks := new(chainOfTaskBuilder).Add(c.tasks...).Build()
-	for _, l := range loaders {
+	for _, loader := range loaders {
 		for okLoader == nil {
-			okLoader = l.Unload(chainTasks)
+			okLoader = loader.Unload(chainTasks)
 		}
 		okLoader = nil
-		if ok = c.SendTo(l.Salary(), l); ok != nil {
+		if ok = c.SendTo(loader.Salary(), loader); ok != nil {
 			return ok
 		}
 	}
@@ -46,6 +53,8 @@ func (c *Customer) Start() (ok error) {
 }
 
 func (c *Customer) HireLoader(loaders ILoader) (ok error) {
+	c.Lock()
 	c.loaders = append(c.loaders, loaders)
+	c.Unlock()
 	return nil
 }
