@@ -1,6 +1,6 @@
 package account
 
-func (a *Account) ToModel() *Model {
+func (a *Account) ToModelAccount() *Model {
 	return &Model{a.name, a.username, a.password, false}
 }
 

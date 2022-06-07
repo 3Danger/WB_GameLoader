@@ -4,7 +4,7 @@ type IAccount interface {
 	GetName() string
 	GetUserName() string
 	GetPassword() string
-	ToModel() Model
+	ToModelAccount() Model
 }
 
 type Account struct {

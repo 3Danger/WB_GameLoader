@@ -16,7 +16,7 @@ type Model struct {
 	Drunk          bool                  `json:"drunk"`
 }
 
-func (l *Loader) ToModel() *Model {
+func (l *Loader) ToModel() interface{} {
 	tasks := make(map[string]*task.Task, 0)
 	for _, v := range l.tasks {
 		if v.HasMoved() {
@@ -26,8 +26,8 @@ func (l *Loader) ToModel() *Model {
 		}
 	}
 	return &Model{
-		Account:        l.Account.ToModel(),
-		Wallet:         l.IWallet.ToModel(),
+		Account:        l.Account.ToModelAccount(),
+		Wallet:         l.Wallet.ToModel(),
 		SuccessTasks:   tasks,
 		MaxWeightTrans: l.maxWeightTrans,
 		Salary:         l.salary,

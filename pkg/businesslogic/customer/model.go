@@ -22,7 +22,7 @@ type Model struct {
 	Loaders []*loader.Model `json:"loaders"`
 }
 
-func (c *Customer) ToModel() *Model {
+func (c *Customer) ToModel() interface{} {
 	tasks := make([]*task.Task, 0, len(c.tasks))
 	for _, v := range c.tasks {
 		if ok := v.HasMoved(); !ok {
@@ -32,11 +32,11 @@ func (c *Customer) ToModel() *Model {
 
 	loaders := make([]*loader.Model, len(c.loaders))
 	for i := range c.loaders {
-		loaders = append(loaders, c.loaders[i].ToModel())
+		loaders = append(loaders, c.loaders[i].ToModel().(*loader.Model))
 	}
 	return &Model{
-		Account: c.Account.ToModel(),
-		Wallet:  c.IWallet.ToModel(),
+		Account: c.Account.ToModelAccount(),
+		Wallet:  c.Wallet.ToModel(),
 		Loaders: loaders,
 		Tasks:   tasks,
 	}
