@@ -35,7 +35,7 @@ func GenerateTasks() []*task.Task {
 	}
 }
 
-func main2() {
+func main() {
 	if ok := initConfig(); ok != nil {
 		log.Fatalln(ok)
 	}
@@ -55,7 +55,7 @@ func main2() {
 	//fmt.Println(string(a))
 }
 
-func main() {
+func main2() {
 	if ok := initConfig(); ok != nil {
 		log.Fatalln(ok)
 	}

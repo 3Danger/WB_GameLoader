@@ -13,9 +13,7 @@ const (
 )
 
 type IAccount interface {
-	Login() string
-	IsCustomer() bool
-	Tasks() interface{}
+	GetUserName() string
 	ToModel() interface{}
 }
 
@@ -28,9 +26,9 @@ func (o *Operator) GetRoute() *http.ServeMux {
 	route := new(http.ServeMux)
 	route.HandleFunc("/login", o.Login)
 	route.HandleFunc("/register", o.Register)
-	route.HandleFunc("/tasks", o.Login)
+	//route.HandleFunc("/tasks", o.Tasks)
 	route.HandleFunc("/me", o.Me)
-	route.HandleFunc("/start", o.Login)
+	//route.HandleFunc("/start", o.Start)
 	return route
 }
 
@@ -56,6 +54,6 @@ func (o *Operator) HasLogin(login string) bool {
 
 func (o *Operator) Add(user IAccount) {
 	o.Lock()
-	o.accounts[user.Login()] = user
+	o.accounts[user.GetUserName()] = user
 	o.Unlock()
 }

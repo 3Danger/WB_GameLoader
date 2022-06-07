@@ -17,6 +17,10 @@ func NewAccount(name, username, password string) *Account {
 	return &Account{name, username, password}
 }
 
+func NewAccountFromModel(model *Model) *Account {
+	return &Account{model.Name, model.Username, model.Password}
+}
+
 func (a Account) GetName() string {
 	return a.name
 }

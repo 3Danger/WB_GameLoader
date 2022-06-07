@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"GameLoaders/pkg/businesslogic/account"
 	"encoding/json"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
@@ -8,45 +9,43 @@ import (
 	"strings"
 )
 
-type account struct {
+type ClaimsAccount struct {
 	jwt.StandardClaims `json:"-"`
-	Id                 string `json:"-"`
-	Username           string `json:"login"`
-	Password           string `json:"password"`
-	Name               string `json:"name"`
-	IsCustomer         bool   `json:"is_customer"`
+	account.Model      `json:"account.model"`
 }
 
-func accountParseFrom(body io.Reader) (acc *account, ok error) {
-	acc = new(account)
-	ok = json.NewDecoder(body).Decode(acc)
+func accountParseFrom(body io.Reader) (accClaims *ClaimsAccount, ok error) {
+	accClaims = new(ClaimsAccount)
+	accModel := account.Model{}
+	ok = json.NewDecoder(body).Decode(&accModel)
 	if ok == nil {
-		if acc.Username == "" {
+		if accModel.Username == "" {
 			ok = errors.New("invalid username")
 		}
-		if acc.Password == "" {
+		if accModel.Password == "" {
 			ok = errors.New("invalid password")
 		}
 	}
 	if ok != nil {
 		return nil, ok
 	}
-	return acc, nil
+	accClaims.Model = accModel
+	return accClaims, nil
 }
 
-func (a *account) generateToken() (token string, ok error) {
+func (a *ClaimsAccount) generateToken() (token string, ok error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, a).SignedString([]byte(signingKey))
 }
 
-func parseToken(accessTokenBeaver string) (acc *account, ok error) {
+func parseToken(accessTokenBeaver string) (acc *ClaimsAccount, ok error) {
 	var accessToken string
 	var isCut bool
-	acc = new(account)
+	acc = new(ClaimsAccount)
 
 	if _, accessToken, isCut = strings.Cut(accessTokenBeaver, "Bearer "); !isCut {
 		return nil, errors.New("token invalid")
 	}
-	token, ok := jwt.ParseWithClaims(accessToken, &account{}, func(token *jwt.Token) (interface{}, error) {
+	token, ok := jwt.ParseWithClaims(accessToken, &ClaimsAccount{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
 		}
@@ -57,7 +56,7 @@ func parseToken(accessTokenBeaver string) (acc *account, ok error) {
 		return nil, ok
 	}
 
-	acc, okay := token.Claims.(*account)
+	acc, okay := token.Claims.(*ClaimsAccount)
 	if !okay {
 		return nil, errors.New("token claims are not of type *account")
 	}

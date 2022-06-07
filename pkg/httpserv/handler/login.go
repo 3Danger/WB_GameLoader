@@ -7,7 +7,7 @@ import (
 
 func (o *Operator) Login(w http.ResponseWriter, r *http.Request) {
 	var ok error
-	var acc *account
+	var acc *ClaimsAccount
 
 	if r.Method != http.MethodPost {
 		writeError(w, "bad method", http.StatusMethodNotAllowed)

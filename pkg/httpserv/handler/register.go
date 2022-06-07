@@ -1,23 +1,21 @@
 package handler
 
 import (
-	"fmt"
+	"GameLoaders/pkg/businesslogic/account"
+	"GameLoaders/pkg/businesslogic/customer"
+	"GameLoaders/pkg/businesslogic/loader"
 	"github.com/dgrijalva/jwt-go"
 	"net/http"
 	"time"
 )
 
 func (o *Operator) Register(w http.ResponseWriter, r *http.Request) {
-	var (
-		ok  error
-		acc *account
-	)
+	var ok error
+	var acc *ClaimsAccount
+
 	if http.MethodPost != r.Method {
 		writeError(w, "bad method", http.StatusMethodNotAllowed)
 		return
-	}
-	for _, v := range r.Cookies() {
-		fmt.Println("---> Cookies:", v.Raw)
 	}
 	if acc, ok = accountParseFrom(r.Body); ok != nil {
 		writeError(w, ok.Error(), http.StatusBadRequest)
@@ -33,20 +31,10 @@ func (o *Operator) Register(w http.ResponseWriter, r *http.Request) {
 		ExpiresAt: time.Now().Add(tokenTTL).Unix(),
 		IssuedAt:  time.Now().Unix(),
 	}
-	/*
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, acc)
-		t, _ := token.SignedString([]byte(signingKey))
-		fmt.Println("signed:", t)
-		w.Header().Set("Beaver", t)
-		_ = token
-	*/
-	//data, ok := token.SignedString([]byte(signingKey))
-	//jwt.Parse
-	//if ok != nil {
-	//	writeError(w, ok.Error(), 501)
-	//	return
-	//}
-
-	//w.Header().Add("Set-Cookie", data)
+	if acc.IsCustomer {
+		o.Add(customer.NewCustomerRand(account.NewAccountFromModel(&acc.Model)))
+	} else {
+		o.Add(loader.NewLoaderRand(account.NewAccountFromModel(&acc.Model)))
+	}
 	writeResult(w, "success")
 }

@@ -19,7 +19,7 @@ type Model struct {
 	Loaders []interfaces.ILoader `json:"loaders"`
 }
 
-func (c *Customer) ToModel() Model {
+func (c *Customer) ToModel() interface{} {
 	tasks := make([]interfaces.ITask, 0, len(c.tasks))
 	for _, v := range c.tasks {
 		if ok := v.HasMoved(); !ok {
