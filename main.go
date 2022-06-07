@@ -4,9 +4,8 @@ import (
 	"GameLoaders/pkg/businesslogic/customer"
 	"GameLoaders/pkg/businesslogic/loader"
 	"GameLoaders/pkg/businesslogic/task"
-	"GameLoaders/pkg/httpserv/user/account"
-	"GameLoaders/pkg/httpserv/user/loaderAcc"
-	"encoding/json"
+	"GameLoaders/pkg/httpserv/handler"
+	"GameLoaders/pkg/httpserv/server"
 	"fmt"
 	"github.com/spf13/viper"
 	"log"
@@ -19,27 +18,40 @@ func init() {
 }
 func GenerateLoaders() []*loader.Loader {
 	return []*loader.Loader{
-		loader.NewLoader("Vasa Mauro"),
-		loader.NewLoader("Petr Perviy"),
-		loader.NewLoader("Ivan Vasiliev"),
-		loader.NewLoader("Steve Jack"),
-		loader.NewLoader("James Bond"),
+		loader.NewLoaderRand("Vasa Mauro"),
+		loader.NewLoaderRand("Petr Perviy"),
+		loader.NewLoaderRand("Ivan Vasiliev"),
+		loader.NewLoaderRand("Steve Jack"),
+		loader.NewLoaderRand("James Bond"),
 	}
 }
 func GenerateTasks() []*task.Task {
 	return []*task.Task{
-		task.NewTask("Mac", 30),
-		task.NewTask("Bananas", 40),
-		task.NewTask("Bricks", 80),
-		task.NewTask("Brads", 10),
+		{"Mac", 30},
+		{"Bananas", 40},
+		{"Bricks", 80},
+		{"Brads", 10},
 	}
 }
 
 func main() {
-	loader := loaderAcc.NewUser(account.NewAccount("123", "loaderee", "loader", "qwe", false), loader.NewLoader("loader"))
-	fmt.Println(loader.Loader.CanMoveWeight())
-	a, _ := json.Marshal(loader.Loader)
-	fmt.Println(string(a))
+	if ok := initConfig(); ok != nil {
+		log.Fatalln(ok)
+	}
+	oper := handler.NewOperator()
+	//route := new(http.ServeMux)
+	//route.HandleFunc("/login", oper.Login)
+	serv := new(server.Server)
+
+	ok := serv.Run(viper.GetString("port"), oper.GetRoute())
+	if ok != nil {
+		log.Fatalln(ok)
+	}
+
+	//loader := loaderAcc.NewUser(account.NewAccount("123", "loaderee", "loader", "qwe", false), loader.NewLoaderRand("loader"))
+	//fmt.Println(loader.Loader.CanMoveWeight())
+	//a, _ := json.Marshal(loader.Loader)
+	//fmt.Println(string(a))
 }
 
 func main2() {
@@ -83,7 +95,8 @@ func main2() {
 }
 
 func initConfig() (ok error) {
-	viper.AddConfigPath("configs")
-	viper.SetConfigFile("server")
+	viper.AddConfigPath("./configs/")
+	viper.SetConfigType("yml")
+	viper.SetConfigName("server")
 	return viper.ReadInConfig()
 }

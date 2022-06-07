@@ -2,41 +2,24 @@ package task
 
 import (
 	"math/rand"
-	"sync"
 )
 
 type Task struct {
-	mut    sync.RWMutex
-	name   string
-	weight float32
+	Name   string  `json:"name"`
+	Weight float32 `json:"weight"`
 }
 
-func (t *Task) Name() string {
-	t.mut.RLock()
-	defer t.mut.RUnlock()
-	return t.name
-}
-func (t *Task) Weight() float32 {
-	t.mut.RLock()
-	defer t.mut.RUnlock()
-	return t.weight
-}
+func (t *Task) GetName() string    { return t.Name }
+func (t *Task) GetWeight() float32 { return t.Weight }
+
 func (t *Task) HasMoved() bool {
-	t.mut.RLock()
-	defer t.mut.RUnlock()
-	return t.weight <= 0.
+	return t.Weight <= 0.
 }
 
 func (t *Task) Unload(unload float32) {
-	t.mut.Lock()
-	t.weight -= unload
-	t.mut.Unlock()
+	t.Weight -= unload
 }
 
 func NewTaskRand(name string) *Task {
-	return &Task{name: name, weight: rand.Float32()*70 + 10}
-}
-
-func NewTask(name string, weight float32) *Task {
-	return &Task{name: name, weight: weight}
+	return &Task{Name: name, Weight: rand.Float32()*70 + 10}
 }

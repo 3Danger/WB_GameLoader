@@ -5,7 +5,7 @@ type Unloadable interface {
 }
 
 type Weightable interface {
-	Weight() float32
+	GetWeight() float32
 }
 
 type IHasMoved interface {
@@ -16,5 +16,5 @@ type ITask interface {
 	Unloadable
 	Weightable
 	IHasMoved
-	Name() string
+	GetName() string
 }

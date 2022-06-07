@@ -1,41 +1,61 @@
 package handler
 
 import (
-	"GameLoaders/pkg/httpserv/user/customerAcc"
-	"GameLoaders/pkg/httpserv/user/loaderAcc"
+	"net/http"
+	"sync"
+	"time"
 )
 
+const (
+	salt       = "#sdfjsdhdasd"
+	signingKey = "#blabl$@#@#ablaqwe1231"
+	tokenTTL   = time.Second * 10
+)
+
+type IAccount interface {
+	Login() string
+	IsCustomer() bool
+	Tasks() interface{}
+	ToModel() interface{}
+}
+
 type Operator struct {
-	customer map[string]*customerAcc.User
-	loader   map[string]*loaderAcc.User
+	sync.RWMutex
+	accounts map[string]IAccount
+}
+
+func (o *Operator) GetRoute() *http.ServeMux {
+	route := new(http.ServeMux)
+	route.HandleFunc("/login", o.Login)
+	route.HandleFunc("/register", o.Register)
+	route.HandleFunc("/tasks", o.Login)
+	route.HandleFunc("/me", o.Me)
+	route.HandleFunc("/start", o.Login)
+	return route
 }
 
 func NewOperator() *Operator {
 	return &Operator{
-		customer: make(map[string]*customerAcc.User),
-		loader:   make(map[string]*loaderAcc.User),
+		accounts: make(map[string]IAccount),
 	}
 }
 
-func (o *Operator) GetCustomer(key string) *customerAcc.User {
-	return o.customer[key]
+func (o *Operator) GetUser(key string) IAccount {
+	o.RLock()
+	user := o.accounts[key]
+	o.RUnlock()
+	return user
 }
 
-func (o *Operator) GetLoader(key string) *loaderAcc.User {
-	return o.loader[key]
+func (o *Operator) HasLogin(login string) bool {
+	o.RLock()
+	_, ok := o.accounts[login]
+	o.RUnlock()
+	return ok
 }
 
-type iAccount interface {
-	IsCustomer() bool
-	Id() string
-}
-
-func (o *Operator) Add(user iAccount) {
-	if user.IsCustomer() {
-		//TODO key!!!
-		o.customer[user.Id()] = user.(*customerAcc.User)
-	} else {
-		//TODO key!!!
-		o.loader[user.Id()] = user.(*loaderAcc.User)
-	}
+func (o *Operator) Add(user IAccount) {
+	o.Lock()
+	o.accounts[user.Login()] = user
+	o.Unlock()
 }

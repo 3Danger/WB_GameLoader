@@ -25,7 +25,7 @@ func (c *chainOfTaskBuilder) Build() *chaiOfTask {
 		return nil
 	}
 	sort.Slice(c.tasks, func(i, j int) bool {
-		return c.tasks[i].Weight() > c.tasks[j].Weight()
+		return c.tasks[i].GetWeight() > c.tasks[j].GetWeight()
 	})
 
 	head = &chaiOfTask{c.tasks[0], nil}

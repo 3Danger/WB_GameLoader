@@ -2,6 +2,13 @@ package account
 
 import "sync"
 
+type IAccount interface {
+	IsCustomer() bool
+	Id() string
+	Login() string
+	GetAccount() IAccount
+}
+
 type Account struct {
 	mut        sync.RWMutex
 	id         string
@@ -11,10 +18,9 @@ type Account struct {
 	isCustomer bool
 }
 
-func NewAccount(id, name, username, password string, isCustomer bool) *Account {
+func NewAccount(id, username, password string, isCustomer bool) *Account {
 	return &Account{
 		id:         id,
-		name:       name,
 		username:   username,
 		password:   password,
 		isCustomer: isCustomer,
@@ -31,4 +37,13 @@ func (a *Account) Id() string {
 	a.mut.RLock()
 	defer a.mut.RUnlock()
 	return a.id
+}
+
+func (a *Account) Name() string { return a.name }
+
+func (a *Account) Login() string {
+	return a.username
+}
+func (a *Account) GetAccount() IAccount {
+	return a
 }

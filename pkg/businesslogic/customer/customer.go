@@ -4,6 +4,7 @@ import (
 	. "GameLoaders/pkg/businesslogic/_interfaces"
 	. "GameLoaders/pkg/businesslogic/wallet"
 	"errors"
+	"math/rand"
 	"sync"
 )
 
@@ -13,6 +14,10 @@ type Customer struct {
 	name    string
 	tasks   []ITask
 	loaders []ILoader
+}
+
+func (c *Customer) Tasks() []ITask {
+	return c.tasks
 }
 
 func (c *Customer) AddTask(task ITask) *Customer {
@@ -25,6 +30,14 @@ func (c *Customer) AddTask(task ITask) *Customer {
 func NewCustomer(money float32, name string) *Customer {
 	return &Customer{
 		IWallet: NewWallet(money),
+		name:    name,
+		tasks:   make([]ITask, 0, 10),
+	}
+}
+
+func NewCustomerRand(name string) *Customer {
+	return &Customer{
+		IWallet: NewWallet(rand.Float32()*90_000 + 10_000),
 		name:    name,
 		tasks:   make([]ITask, 0, 10),
 	}
@@ -49,7 +62,7 @@ func (c *Customer) Start() (ok error) {
 	if chainTasks.HasMoved() {
 		return nil
 	}
-	return errors.New("last task \"" + chainTasks.Name() + "\" failed!")
+	return errors.New("last task \"" + chainTasks.GetName() + "\" failed!")
 }
 
 func (c *Customer) HireLoader(loaders ILoader) (ok error) {

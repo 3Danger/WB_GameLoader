@@ -24,7 +24,7 @@ func (l *Loader) Salary() float32 {
 	return l.salary
 }
 
-func NewLoader(name string) *Loader {
+func NewLoaderRand(name string) *Loader {
 	drunk := rand.Int()&1 == 0
 	return &Loader{
 		name:           name,
