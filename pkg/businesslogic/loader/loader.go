@@ -1,17 +1,19 @@
 package loader
 
 import (
-	. "GameLoaders/pkg/businesslogic/_interfaces"
-	. "GameLoaders/pkg/businesslogic/wallet"
+	"GameLoaders/pkg/businesslogic/account"
+	"GameLoaders/pkg/businesslogic/interfaces"
+	"GameLoaders/pkg/businesslogic/wallet"
 	"errors"
 	"math/rand"
 	"sync"
 )
 
 type Loader struct {
-	IWallet
+	interfaces.IWallet
 	sync.RWMutex
-	name           string
+	*account.Account
+	tasks          map[string]interfaces.ITask
 	maxWeightTrans float32 //5-30kg
 	salary         float32 //ЗП
 	fatigue        float32 //усталость
@@ -24,11 +26,12 @@ func (l *Loader) Salary() float32 {
 	return l.salary
 }
 
-func NewLoaderRand(name string) *Loader {
+func NewLoaderRand(account *account.Account) *Loader {
 	drunk := rand.Int()&1 == 0
 	return &Loader{
-		name:           name,
-		IWallet:        NewWallet(0),
+		Account:        account,
+		IWallet:        wallet.NewWallet(0),
+		tasks:          make(map[string]interfaces.ITask),
 		maxWeightTrans: rand.Float32()*25 + 5,
 		salary:         rand.Float32()*20 + 10,
 		fatigue:        0.0,
@@ -49,14 +52,17 @@ func (l *Loader) CanMoveWeight() float32 {
 	return l.maxWeightTrans * (1.0 - fatigue)
 }
 
-func (l *Loader) Unload(task ITask) error {
+func (l *Loader) Unload(task interfaces.ITask) error {
 	//- формула рассчета переносимого веса
 	// (вес*(100 - усталость/100)*(пьянство/100))
 	canMoveWeight := l.CanMoveWeight()
 	if canMoveWeight <= 0. {
-		return errors.New(l.name + " is very tired")
+		return errors.New(l.GetName() + " is very tired")
 	}
 	task.Unload(canMoveWeight)
+	if _, ok := l.tasks[task.GetName()]; !ok {
+		l.tasks[task.GetName()] = task
+	}
 	l.Lock()
 	l.fatigue += 0.2
 	l.Unlock()

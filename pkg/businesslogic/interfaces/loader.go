@@ -1,4 +1,4 @@
-package _interfaces
+package interfaces
 
 type ILoader interface {
 	IWallet

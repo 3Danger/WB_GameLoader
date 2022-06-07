@@ -1,11 +1,6 @@
 package handler
 
 import (
-	"GameLoaders/pkg/businesslogic/customer"
-	"GameLoaders/pkg/businesslogic/loader"
-	account2 "GameLoaders/pkg/httpserv/user/account"
-	"GameLoaders/pkg/httpserv/user/customerAcc"
-	"GameLoaders/pkg/httpserv/user/loaderAcc"
 	"encoding/json"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
@@ -37,20 +32,6 @@ func accountParseFrom(body io.Reader) (acc *account, ok error) {
 		return nil, ok
 	}
 	return acc, nil
-}
-
-func (a *account) toCustomer() *customerAcc.User {
-	return customerAcc.NewUser(
-		account2.NewAccount(a.Id, a.Username, a.Password, true),
-		customer.NewCustomerRand(a.Name),
-	)
-}
-
-func (a *account) toLoader() *loaderAcc.User {
-	return loaderAcc.NewUser(
-		account2.NewAccount(a.Id, a.Username, a.Password, false),
-		loader.NewLoaderRand(a.Name),
-	)
 }
 
 func (a *account) generateToken() (token string, ok error) {

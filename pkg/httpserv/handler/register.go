@@ -33,10 +33,6 @@ func (o *Operator) Register(w http.ResponseWriter, r *http.Request) {
 		ExpiresAt: time.Now().Add(tokenTTL).Unix(),
 		IssuedAt:  time.Now().Unix(),
 	}
-	if acc.IsCustomer {
-		o.Add()
-	}
-	o.Add(acc)
 	/*
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, acc)
 		t, _ := token.SignedString([]byte(signingKey))

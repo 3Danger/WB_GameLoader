@@ -1,6 +1,7 @@
 package main
 
 import (
+	"GameLoaders/pkg/businesslogic/account"
 	"GameLoaders/pkg/businesslogic/customer"
 	"GameLoaders/pkg/businesslogic/loader"
 	"GameLoaders/pkg/businesslogic/task"
@@ -18,11 +19,11 @@ func init() {
 }
 func GenerateLoaders() []*loader.Loader {
 	return []*loader.Loader{
-		loader.NewLoaderRand("Vasa Mauro"),
-		loader.NewLoaderRand("Petr Perviy"),
-		loader.NewLoaderRand("Ivan Vasiliev"),
-		loader.NewLoaderRand("Steve Jack"),
-		loader.NewLoaderRand("James Bond"),
+		loader.NewLoaderRand(account.NewAccount("Vasa Mauro", "Vasa", "qwe")),
+		loader.NewLoaderRand(account.NewAccount("Petr Perviy", "Petr", "qwe")),
+		loader.NewLoaderRand(account.NewAccount("Ivan Vasiliev", "Ivan", "qwe")),
+		loader.NewLoaderRand(account.NewAccount("Steve Jack", "Steve", "qwe")),
+		loader.NewLoaderRand(account.NewAccount("James Bond", "James", "qwe")),
 	}
 }
 func GenerateTasks() []*task.Task {
@@ -34,7 +35,7 @@ func GenerateTasks() []*task.Task {
 	}
 }
 
-func main() {
+func main2() {
 	if ok := initConfig(); ok != nil {
 		log.Fatalln(ok)
 	}
@@ -54,14 +55,14 @@ func main() {
 	//fmt.Println(string(a))
 }
 
-func main2() {
+func main() {
 	if ok := initConfig(); ok != nil {
 		log.Fatalln(ok)
 	}
 	tasks := GenerateTasks()
 	loaders := GenerateLoaders()
-	client := customer.NewCustomer(100.000, "Client one")
-	client2 := customer.NewCustomer(20.000, "Client two")
+	client := customer.NewCustomerRand(account.NewAccount("client01", "csamuro", "qwe"))
+	client2 := customer.NewCustomerRand(account.NewAccount("client02", "csamuro2", "qwe"))
 	for i, v := range tasks {
 		if i%2 == 0 {
 			client.AddTask(v)

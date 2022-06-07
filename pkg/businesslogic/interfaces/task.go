@@ -1,4 +1,4 @@
-package _interfaces
+package interfaces
 
 type Unloadable interface {
 	Unload(unload float32)

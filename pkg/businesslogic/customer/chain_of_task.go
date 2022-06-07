@@ -1,7 +1,7 @@
 package customer
 
 import (
-	. "GameLoaders/pkg/businesslogic/_interfaces"
+	. "GameLoaders/pkg/businesslogic/interfaces"
 	"sort"
 	"sync"
 )
