@@ -2,7 +2,8 @@ package customer
 
 import (
 	"GameLoaders/pkg/businesslogic/account"
-	"GameLoaders/pkg/businesslogic/interfaces"
+	"GameLoaders/pkg/businesslogic/loader"
+	"GameLoaders/pkg/businesslogic/task"
 	"GameLoaders/pkg/businesslogic/wallet"
 	"errors"
 	"math/rand"
@@ -10,37 +11,51 @@ import (
 )
 
 type Customer struct {
-	interfaces.IWallet
+	*wallet.Wallet
 	sync.RWMutex
 	*account.Account
-	tasks   []interfaces.ITask
-	loaders []interfaces.ILoader
+	tasks   []*task.Task
+	loaders []*loader.Loader
 }
 
-func (c *Customer) Tasks() []interfaces.ITask {
+func (c *Customer) Tasks() []*task.Task {
 	return c.tasks
 }
 
-func (c *Customer) AddTask(task interfaces.ITask) *Customer {
+func (c *Customer) AddTask(task *task.Task) *Customer {
 	c.Lock()
 	c.tasks = append(c.tasks, task)
 	c.Unlock()
 	return c
 }
 
+func NewCustomerFromModel(model *Model) *Customer {
+	loaders := make([]*loader.Loader, len(model.Loaders))
+	for i := range loaders {
+		loaders[i] = loader.NewLoaderFromModel(model.Loaders[i])
+	}
+	return &Customer{
+		Wallet:  wallet.NewWalletFromModel(model.Wallet),
+		RWMutex: sync.RWMutex{},
+		Account: account.NewAccountFromModel(model.Account),
+		tasks:   model.Tasks,
+		loaders: loaders,
+	}
+}
+
 func NewCustomer(account *account.Account, money float32) *Customer {
 	return &Customer{
-		IWallet: wallet.NewWallet(money),
+		Wallet:  wallet.NewWallet(money),
 		Account: account,
-		tasks:   make([]interfaces.ITask, 0, 10),
+		tasks:   make([]*task.Task, 0, 10),
 	}
 }
 
 func NewCustomerRand(account *account.Account) *Customer {
 	return &Customer{
-		IWallet: wallet.NewWallet(rand.Float32()*90_000 + 10_000),
+		Wallet:  wallet.NewWallet(rand.Float32()*90_000 + 10_000),
 		Account: account,
-		tasks:   make([]interfaces.ITask, 0, 10),
+		tasks:   make([]*task.Task, 0, 10),
 	}
 }
 
@@ -51,12 +66,12 @@ func (c *Customer) Start() (ok error) {
 		return errors.New("there is no task")
 	}
 	chainTasks := new(chainOfTaskBuilder).Add(c.tasks...).Build()
-	for _, loader := range loaders {
+	for _, ldr := range loaders {
 		for okLoader == nil {
-			okLoader = loader.Unload(chainTasks)
+			okLoader = ldr.Unload(chainTasks.Task)
 		}
 		okLoader = nil
-		if ok = c.SendTo(loader.Salary(), loader); ok != nil {
+		if ok = c.SendTo(ldr, ldr.Salary()); ok != nil {
 			return ok
 		}
 	}
@@ -66,7 +81,7 @@ func (c *Customer) Start() (ok error) {
 	return errors.New("last task \"" + chainTasks.GetName() + "\" failed!")
 }
 
-func (c *Customer) HireLoader(loaders interfaces.ILoader) (ok error) {
+func (c *Customer) HireLoader(loaders *loader.Loader) (ok error) {
 	c.Lock()
 	c.loaders = append(c.loaders, loaders)
 	c.Unlock()

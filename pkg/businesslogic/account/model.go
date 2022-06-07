@@ -1,7 +1,7 @@
 package account
 
-func (a *Account) ToModel() Model {
-	return Model{a.name, a.username, a.password, false}
+func (a *Account) ToModel() *Model {
+	return &Model{a.name, a.username, a.password, false}
 }
 
 type Model struct {

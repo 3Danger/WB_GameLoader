@@ -1,23 +1,31 @@
 package loader
 
+import (
+	"GameLoaders/pkg/businesslogic/account"
+	"GameLoaders/pkg/businesslogic/task"
+	"GameLoaders/pkg/businesslogic/wallet"
+)
+
 type Model struct {
-	Account        interface{}   `json:"account"`
-	Wallet         interface{}   `json:"wallet"`
-	SuccessTasks   []interface{} `json:"success_tasks"`
-	MaxWeightTrans float32       `json:"max_weight_trans"`
-	Salary         float32       `json:"salary"`
-	Fatigue        float32       `json:"fatigue"`
-	Drunk          bool          `json:"drunk"`
+	Account        *account.Model        `json:"account"`
+	Wallet         *wallet.Model         `json:"wallet"`
+	SuccessTasks   map[string]*task.Task `json:"success_tasks"`
+	MaxWeightTrans float32               `json:"max_weight_trans"`
+	Salary         float32               `json:"salary"`
+	Fatigue        float32               `json:"fatigue"`
+	Drunk          bool                  `json:"drunk"`
 }
 
-func (l *Loader) ToModel() interface{} {
-	tasks := make([]interface{}, 0)
+func (l *Loader) ToModel() *Model {
+	tasks := make(map[string]*task.Task, 0)
 	for _, v := range l.tasks {
 		if v.HasMoved() {
-			tasks = append(tasks, v)
+			if _, ok := tasks[v.GetName()]; !ok {
+				tasks[v.GetName()] = v
+			}
 		}
 	}
-	return Model{
+	return &Model{
 		Account:        l.Account.ToModel(),
 		Wallet:         l.IWallet.ToModel(),
 		SuccessTasks:   tasks,

@@ -1,17 +1,17 @@
 package customer
 
 import (
-	. "GameLoaders/pkg/businesslogic/interfaces"
+	"GameLoaders/pkg/businesslogic/task"
 	"sort"
 	"sync"
 )
 
 type chainOfTaskBuilder struct {
 	sync.RWMutex
-	tasks []ITask
+	tasks []*task.Task
 }
 
-func (c *chainOfTaskBuilder) Add(task ...ITask) *chainOfTaskBuilder {
+func (c *chainOfTaskBuilder) Add(task ...*task.Task) *chainOfTaskBuilder {
 	if len(task) < 1 {
 		return nil
 	}
@@ -38,12 +38,12 @@ func (c *chainOfTaskBuilder) Build() *chaiOfTask {
 }
 
 type chaiOfTask struct {
-	ITask
+	*task.Task
 	next *chaiOfTask
 }
 
 func (c *chaiOfTask) Unload(unload float32) {
-	c.ITask.Unload(unload)
+	c.Task.Unload(unload)
 	if c.HasMoved() {
 		if c.next != nil {
 			*c = *c.next
