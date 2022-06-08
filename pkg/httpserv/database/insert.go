@@ -47,11 +47,13 @@ func (d *DB) InsertCustomer(c *customer.Customer) (ok error) {
 	return ok
 }
 
-func (d *DB) InsertTask(t *task.Task) (ok error) {
+func (d *DB) InsertTask(t *task.Task, account_id int) (ok error) {
 	var query string
+	var rows *pgx.Rows
 
 	query = `INSERT INTO tasks (account_id, name, weight) VALUES ($1, $2, $3)`
-	_, ok = d.connect.Query(query, 0, t.Name, t.Weight)
+	rows, ok = d.connect.Query(query, account_id, t.Name, t.Weight)
+	rows.Close()
 	return ok
 }
 

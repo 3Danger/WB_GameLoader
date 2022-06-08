@@ -3,8 +3,10 @@ package handler
 import (
 	"GameLoaders/pkg/businesslogic/customer"
 	"GameLoaders/pkg/businesslogic/loader"
+	"GameLoaders/pkg/businesslogic/task"
 	"GameLoaders/pkg/httpserv/database"
 	"log"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -17,21 +19,25 @@ const (
 )
 
 type IAccount interface {
+	Id() int
 	Login() string
 	ToModel() interface{}
+	Tasks() []*task.Task
 }
 
 type Operator struct {
 	sync.RWMutex
-	accounts map[string]IAccount
-	db       *database.DB
+	customers map[string]IAccount
+	loaders   map[string]IAccount
+	tasks     []*task.Task
+	db        *database.DB
 }
 
 func (o *Operator) GetRoute() *http.ServeMux {
 	route := new(http.ServeMux)
 	route.HandleFunc("/login", o.Login)
 	route.HandleFunc("/register", o.Register)
-	//route.HandleFunc("/tasks", o.Tasks)
+	route.HandleFunc("/tasks", o.Tasks)
 	route.HandleFunc("/me", o.Me)
 	//route.HandleFunc("/start", o.Start)
 	return route
@@ -39,21 +45,29 @@ func (o *Operator) GetRoute() *http.ServeMux {
 
 func NewOperator(db *database.DB) *Operator {
 	return &Operator{
-		accounts: make(map[string]IAccount),
-		db:       db,
+		customers: make(map[string]IAccount),
+		loaders:   make(map[string]IAccount),
+		tasks:     make([]*task.Task, 0),
+		db:        db,
 	}
 }
 
 func (o *Operator) GetUser(key string) IAccount {
 	o.RLock()
-	user := o.accounts[key]
+	user, ok := o.customers[key]
+	if !ok {
+		user, ok = o.loaders[key]
+	}
 	o.RUnlock()
 	return user
 }
 
 func (o *Operator) HasLogin(login string) bool {
 	o.RLock()
-	_, ok := o.accounts[login]
+	_, ok := o.customers[login]
+	if !ok {
+		_, ok = o.loaders[login]
+	}
 	o.RUnlock()
 	return ok
 }
@@ -63,7 +77,7 @@ func (o *Operator) AddLoader(l *loader.Loader) {
 		log.Fatalln(ok)
 	}
 	o.Lock()
-	o.accounts[l.Login()] = l
+	o.loaders[l.Login()] = l
 	o.Unlock()
 }
 func (o *Operator) AddCustomer(c *customer.Customer) {
@@ -71,6 +85,24 @@ func (o *Operator) AddCustomer(c *customer.Customer) {
 		log.Fatalln(ok)
 	}
 	o.Lock()
-	o.accounts[c.Login()] = c
+	o.customers[c.Login()] = c
+	o.Unlock()
+}
+
+func (o *Operator) AddTasks(tasks ...*task.Task) {
+	var r int
+	var customers []IAccount
+	for _, v := range o.customers {
+		customers = append(customers, v)
+	}
+	for _, t := range tasks {
+		r = rand.Int() % len(o.customers)
+		if ok := o.db.InsertTask(t, customers[r].Id()); ok != nil {
+			log.Fatalln(ok)
+		}
+		customers[r].(*customer.Customer).AddTask(t)
+	}
+	o.Lock()
+	o.tasks = append(o.tasks, tasks...)
 	o.Unlock()
 }

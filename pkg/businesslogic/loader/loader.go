@@ -22,8 +22,12 @@ type Loader struct {
 func (l *Loader) Id() int      { return l.id }
 func (l *Loader) SetId(id int) { l.id = id }
 
-func (l *Loader) Tasks() map[string]*task.Task {
-	return l.tasks
+func (l *Loader) Tasks() []*task.Task {
+	tasks := make([]*task.Task, 0, len(l.tasks))
+	for _, v := range l.tasks {
+		tasks = append(tasks, v)
+	}
+	return tasks
 }
 
 func (l *Loader) MaxWeightTrans() float32 {
