@@ -1,6 +1,10 @@
 package handler
 
 import (
+	"GameLoaders/pkg/businesslogic/customer"
+	"GameLoaders/pkg/businesslogic/loader"
+	"GameLoaders/pkg/httpserv/database"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -13,13 +17,13 @@ const (
 )
 
 type IAccount interface {
-	GetUserName() string
-	ToModel() interface{}
+	Login() string
 }
 
 type Operator struct {
 	sync.RWMutex
 	accounts map[string]IAccount
+	db       *database.DB
 }
 
 func (o *Operator) GetRoute() *http.ServeMux {
@@ -32,9 +36,10 @@ func (o *Operator) GetRoute() *http.ServeMux {
 	return route
 }
 
-func NewOperator() *Operator {
+func NewOperator(db *database.DB) *Operator {
 	return &Operator{
 		accounts: make(map[string]IAccount),
+		db:       db,
 	}
 }
 
@@ -52,8 +57,19 @@ func (o *Operator) HasLogin(login string) bool {
 	return ok
 }
 
-func (o *Operator) Add(user IAccount) {
+func (o *Operator) AddLoader(l *loader.Loader) {
+	if ok := o.db.InsertLoader(l); ok != nil {
+		log.Fatalln(ok)
+	}
 	o.Lock()
-	o.accounts[user.GetUserName()] = user
+	o.accounts[l.Login()] = l
+	o.Unlock()
+}
+func (o *Operator) AddCustomer(c *customer.Customer) {
+	if ok := o.db.InsertCustomer(c); ok != nil {
+		log.Fatalln(ok)
+	}
+	o.Lock()
+	o.accounts[c.Login()] = c
 	o.Unlock()
 }

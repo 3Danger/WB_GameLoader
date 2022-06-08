@@ -1,34 +1,39 @@
 package account
 
 type IAccount interface {
-	GetName() string
-	GetUserName() string
-	GetPassword() string
-	ToModelAccount() Model
+	Id() int
+	Name() string
+	Login() string
+	Password() string
 }
 
 type Account struct {
+	id       int
 	name     string
-	username string
+	login    string
 	password string
 }
 
-func NewAccount(name, username, password string) *Account {
-	return &Account{name, username, password}
+func NewAccount(id int, name, username, password string) *Account {
+	return &Account{id, name, username, password}
 }
 
-func NewAccountFromModel(model *Model) *Account {
-	return &Account{model.Name, model.Username, model.Password}
+func (a *Account) SetId(id int) {
+	a.id = id
 }
 
-func (a Account) GetName() string {
+func (a Account) Id() int {
+	return a.id
+}
+
+func (a Account) Name() string {
 	return a.name
 }
 
-func (a Account) GetUserName() string {
-	return a.username
+func (a Account) Login() string {
+	return a.login
 }
 
-func (a Account) GetPassword() string {
+func (a Account) Password() string {
 	return a.password
 }

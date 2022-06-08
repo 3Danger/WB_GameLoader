@@ -19,8 +19,8 @@ func (o *Operator) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !o.HasLogin(acc.Username) {
-		writeError(w, "account: "+acc.Username+" not found", http.StatusBadRequest)
+	if !o.HasLogin(acc.Login) {
+		writeError(w, "account: "+acc.Login+" not found", http.StatusBadRequest)
 		return
 	}
 	sign, _ := acc.generateToken()

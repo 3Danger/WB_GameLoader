@@ -6,12 +6,10 @@ import (
 	"GameLoaders/pkg/businesslogic/wallet"
 	"errors"
 	"math/rand"
-	"sync"
 )
 
 type Loader struct {
 	*wallet.Wallet
-	sync.RWMutex
 	*account.Account
 	tasks          map[string]*task.Task
 	maxWeightTrans float32 //5-30kg
@@ -20,23 +18,24 @@ type Loader struct {
 	drunk          bool
 }
 
-func (l *Loader) Salary() float32 {
-	l.RLock()
-	defer l.RUnlock()
-	return l.salary
+func (l *Loader) Tasks() map[string]*task.Task {
+	return l.tasks
 }
 
-func NewLoaderFromModel(model *Model) *Loader {
-	return &Loader{
-		Wallet:         wallet.NewWalletFromModel(model.Wallet),
-		RWMutex:        sync.RWMutex{},
-		Account:        account.NewAccountFromModel(model.Account),
-		tasks:          model.SuccessTasks,
-		maxWeightTrans: 0,
-		salary:         0,
-		fatigue:        0,
-		drunk:          false,
-	}
+func (l *Loader) MaxWeightTrans() float32 {
+	return l.maxWeightTrans
+}
+
+func (l *Loader) Fatigue() float32 {
+	return l.fatigue
+}
+
+func (l *Loader) Drunk() bool {
+	return l.drunk
+}
+
+func (l *Loader) Salary() float32 {
+	return l.salary
 }
 
 func NewLoaderRand(account *account.Account) *Loader {
@@ -53,12 +52,10 @@ func NewLoaderRand(account *account.Account) *Loader {
 }
 
 func (l *Loader) CanMoveWeight() float32 {
-	l.RLock()
 	fatigue := l.fatigue
 	if l.drunk {
 		fatigue += 0.5
 	}
-	l.RUnlock()
 	if fatigue > 1.0 {
 		fatigue = 1.0
 	}
@@ -70,14 +67,12 @@ func (l *Loader) Unload(task *task.Task) error {
 	// (вес*(100 - усталость/100)*(пьянство/100))
 	canMoveWeight := l.CanMoveWeight()
 	if canMoveWeight <= 0. {
-		return errors.New(l.GetName() + " is very tired")
+		return errors.New(l.Name() + " is very tired")
 	}
 	task.Unload(canMoveWeight)
-	if _, ok := l.tasks[task.GetName()]; !ok {
-		l.tasks[task.GetName()] = task
+	if _, ok := l.tasks[task.Name]; !ok {
+		l.tasks[task.Name] = task
 	}
-	l.Lock()
 	l.fatigue += 0.2
-	l.Unlock()
 	return nil
 }

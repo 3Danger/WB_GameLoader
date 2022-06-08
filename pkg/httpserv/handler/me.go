@@ -13,9 +13,9 @@ func (o *Operator) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !o.HasLogin(acc.Username) {
+	if !o.HasLogin(acc.Login) {
 		writeError(w, ok.Error(), http.StatusUnauthorized)
 		return
 	}
-	writeData(w, o.GetUser(acc.Username).ToModel(), http.StatusOK)
+	writeData(w, o.GetUser(acc.Login), http.StatusOK)
 }

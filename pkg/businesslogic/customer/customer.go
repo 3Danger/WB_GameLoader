@@ -14,8 +14,16 @@ type Customer struct {
 	*wallet.Wallet
 	sync.RWMutex
 	*account.Account
+	id      int
 	tasks   []*task.Task
 	loaders []*loader.Loader
+}
+
+func (c *Customer) Id() int      { return c.id }
+func (c *Customer) SetId(id int) { c.id = id }
+
+func (c *Customer) Loaders() []*loader.Loader {
+	return c.loaders
 }
 
 func (c *Customer) Tasks() []*task.Task {
@@ -27,20 +35,6 @@ func (c *Customer) AddTask(task *task.Task) *Customer {
 	c.tasks = append(c.tasks, task)
 	c.Unlock()
 	return c
-}
-
-func NewCustomerFromModel(model *Model) *Customer {
-	loaders := make([]*loader.Loader, len(model.Loaders))
-	for i := range loaders {
-		loaders[i] = loader.NewLoaderFromModel(model.Loaders[i])
-	}
-	return &Customer{
-		Wallet:  wallet.NewWalletFromModel(model.Wallet),
-		RWMutex: sync.RWMutex{},
-		Account: account.NewAccountFromModel(model.Account),
-		tasks:   model.Tasks,
-		loaders: loaders,
-	}
 }
 
 func NewCustomer(account *account.Account, money float32) *Customer {
@@ -78,12 +72,11 @@ func (c *Customer) Start() (ok error) {
 	if chainTasks.HasMoved() {
 		return nil
 	}
-	return errors.New("last task \"" + chainTasks.GetName() + "\" failed!")
+	return errors.New("last task \"" + chainTasks.Name + "\" failed!")
 }
 
-func (c *Customer) HireLoader(loaders *loader.Loader) (ok error) {
+func (c *Customer) HireLoader(loaders *loader.Loader) {
 	c.Lock()
 	c.loaders = append(c.loaders, loaders)
 	c.Unlock()
-	return nil
 }

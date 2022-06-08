@@ -17,10 +17,6 @@ func NewWallet(money float32) *Wallet {
 	}
 }
 
-func NewWalletFromModel(model *Model) *Wallet {
-	return NewWallet(model.Money)
-}
-
 type receive interface {
 	Receive(money float32)
 }

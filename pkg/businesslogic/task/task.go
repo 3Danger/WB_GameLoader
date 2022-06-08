@@ -5,12 +5,13 @@ import (
 )
 
 type Task struct {
+	Id     string  `json:"id"`
 	Name   string  `json:"name"`
 	Weight float32 `json:"weight"`
 }
 
-func (t *Task) GetName() string    { return t.Name }
-func (t *Task) GetWeight() float32 { return t.Weight }
+//func (t *Task) GetName() string    { return t.Name }
+//func (t *Task) GetWeight() float32 { return t.Weight }
 
 func (t *Task) HasMoved() bool {
 	return t.Weight <= 0.

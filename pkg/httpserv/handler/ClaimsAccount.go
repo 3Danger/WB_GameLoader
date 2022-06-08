@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"GameLoaders/pkg/businesslogic/account"
 	"encoding/json"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
@@ -11,25 +10,26 @@ import (
 
 type ClaimsAccount struct {
 	jwt.StandardClaims `json:"-"`
-	account.Model      `json:"account.model"`
+	Name               string `json:"name"`
+	Login              string `json:"login"`
+	Password           string `json:"password"`
+	IsCustomer         bool   `json:"is_customer"`
 }
 
 func accountParseFrom(body io.Reader) (accClaims *ClaimsAccount, ok error) {
 	accClaims = new(ClaimsAccount)
-	accModel := account.Model{}
-	ok = json.NewDecoder(body).Decode(&accModel)
+	ok = json.NewDecoder(body).Decode(&accClaims)
 	if ok == nil {
-		if accModel.Username == "" {
+		if accClaims.Login == "" {
 			ok = errors.New("invalid username")
 		}
-		if accModel.Password == "" {
+		if accClaims.Password == "" {
 			ok = errors.New("invalid password")
 		}
 	}
 	if ok != nil {
 		return nil, ok
 	}
-	accClaims.Model = accModel
 	return accClaims, nil
 }
 
@@ -58,7 +58,7 @@ func parseToken(accessTokenBeaver string) (acc *ClaimsAccount, ok error) {
 
 	acc, okay := token.Claims.(*ClaimsAccount)
 	if !okay {
-		return nil, errors.New("token claims are not of type *account")
+		return nil, errors.New("token claims are not of type *ClaimsAccount")
 	}
 	return acc, nil
 }

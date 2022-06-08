@@ -21,9 +21,9 @@ func (o *Operator) Register(w http.ResponseWriter, r *http.Request) {
 		writeError(w, ok.Error(), http.StatusBadRequest)
 		return
 	}
-	if o.HasLogin(acc.Username) {
+	if o.HasLogin(acc.Login) {
 		//TODO уточнить код ошибки
-		writeError(w, "login: \""+acc.Username+"\" already use", 418)
+		writeError(w, "login: \""+acc.Login+"\" already use", 418)
 		return
 	}
 	acc.Password = generatePasswordHash(acc.Password)
@@ -32,9 +32,9 @@ func (o *Operator) Register(w http.ResponseWriter, r *http.Request) {
 		IssuedAt:  time.Now().Unix(),
 	}
 	if acc.IsCustomer {
-		o.Add(customer.NewCustomerRand(account.NewAccountFromModel(&acc.Model)))
+		o.AddCustomer(customer.NewCustomerRand(account.NewAccount(0, acc.Name, acc.Login, acc.Password)))
 	} else {
-		o.Add(loader.NewLoaderRand(account.NewAccountFromModel(&acc.Model)))
+		o.AddLoader(loader.NewLoaderRand(account.NewAccount(0, acc.Name, acc.Login, acc.Password)))
 	}
 	writeResult(w, "success")
 }
