@@ -18,10 +18,10 @@ func (o *Operator) Tasks(w http.ResponseWriter, r *http.Request) {
 		} else {
 			if len(o.customers) == 0 {
 				writeError(w, "customers not found", http.StatusConflict)
-				return
+			} else {
+				o.AddTasks(t.Tasks...)
+				writeResult(w, "success")
 			}
-			o.AddTasks(t.Tasks...)
-			writeResult(w, "success")
 		}
 		return
 	}

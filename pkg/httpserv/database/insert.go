@@ -22,7 +22,9 @@ func (d *DB) InsertLoader(l *loader.Loader) (ok error) {
 	if id, ok = d.insertLoader(tx, l); ok != nil {
 		return rollback(tx, ok)
 	}
-	return nil
+	l.SetId(id)
+	ok = tx.Commit()
+	return ok
 }
 
 func (d *DB) InsertCustomer(c *customer.Customer) (ok error) {

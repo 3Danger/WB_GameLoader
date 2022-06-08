@@ -39,7 +39,7 @@ func (o *Operator) GetRoute() *http.ServeMux {
 	route.HandleFunc("/register", o.Register)
 	route.HandleFunc("/tasks", o.Tasks)
 	route.HandleFunc("/me", o.Me)
-	//route.HandleFunc("/start", o.Start)
+	route.HandleFunc("/start", o.Start)
 	return route
 }
 

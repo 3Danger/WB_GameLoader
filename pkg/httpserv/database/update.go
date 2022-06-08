@@ -4,7 +4,7 @@ import (
 	"GameLoaders/pkg/businesslogic/customer"
 	"GameLoaders/pkg/businesslogic/loader"
 	"GameLoaders/pkg/businesslogic/task"
-	"fmt"
+	"github.com/jackc/pgx"
 )
 
 /*
@@ -20,22 +20,25 @@ task
 */
 
 func (d *DB) UpdateCustomer(c *customer.Customer) (ok error) {
-	q := fmt.Sprintf("UPDATE customer SET money = %f WHERE id = %d",
-		c.Wallet.GetInfo(), c.Id())
-	_, ok = d.connect.Query(q)
+	var rows *pgx.Rows
+	q := "UPDATE customer SET money = $1 WHERE id = $2"
+	rows, ok = d.connect.Query(q, c.Wallet.GetInfo(), c.Id())
+	rows.Close()
 	return ok
 }
 
 func (d *DB) UpdateLoader(l *loader.Loader, customer_id int) (ok error) {
-	q := fmt.Sprintf("UPDATE loader SET customer_id = %d, money = %f, fatigue = %f WHERE id = %d",
-		customer_id, l.Wallet.GetInfo(), l.Fatigue(), l.Id())
-	_, ok = d.connect.Query(q)
+	var rows *pgx.Rows
+	q := "UPDATE loader SET customer_id = $1, money = $2, fatigue = $3 WHERE id = $4"
+	rows, ok = d.connect.Query(q, customer_id, l.Wallet.GetInfo(), l.Fatigue(), l.Id())
+	rows.Close()
 	return ok
 }
 
 func (d *DB) UpdateTask(t *task.Task, account_id int) (ok error) {
-	q := fmt.Sprintf("UPDATE loader SET weight = %f, account_id = %d WHERE id = %d",
-		t.Weight, account_id, t.Id)
-	_, ok = d.connect.Query(q)
+	var rows *pgx.Rows
+	q := "UPDATE loader SET weight = $1, account_id = $2 WHERE id = $3"
+	rows, ok = d.connect.Query(q, t.Weight, account_id, t.Id)
+	rows.Close()
 	return ok
 }

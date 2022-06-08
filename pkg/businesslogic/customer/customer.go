@@ -55,24 +55,33 @@ func NewCustomerRand(account *account.Account) *Customer {
 
 func (c *Customer) Start() (ok error) {
 	var okLoader error
+	var sendSolar bool
 	loaders := c.loaders
 	if len(c.tasks) == 0 {
 		return errors.New("there is no task")
 	}
-	chainTasks := new(chainOfTaskBuilder).Add(c.tasks...).Build()
+	index := struct{ A, B int }{0, len(c.tasks)}
 	for _, ldr := range loaders {
-		for okLoader == nil {
-			okLoader = ldr.Unload(chainTasks.Task)
+		for okLoader == nil && index.A != index.B {
+			okLoader = ldr.Unload(c.tasks[index.A])
+			if c.tasks[index.A].HasMoved() {
+				sendSolar = true
+				index.A++
+			}
 		}
 		okLoader = nil
-		if ok = c.SendTo(ldr, ldr.Salary()); ok != nil {
-			return ok
+		if sendSolar {
+			if ok = c.SendTo(ldr, ldr.Salary()); ok != nil {
+				return ok
+			}
+			sendSolar = false
 		}
 	}
-	if chainTasks.HasMoved() {
+	defer func() { c.tasks = c.tasks[index.A:] }()
+	if c.tasks[index.B-1].HasMoved() {
 		return nil
 	}
-	return errors.New("last task \"" + chainTasks.Name + "\" failed!")
+	return errors.New("last task \"" + c.tasks[index.B-1].Name + "\" failed!")
 }
 
 func (c *Customer) HireLoader(loaders *loader.Loader) {
