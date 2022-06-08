@@ -97,7 +97,7 @@ func (o *Operator) AddTasks(tasks ...*task.Task) {
 	}
 	for _, t := range tasks {
 		r = rand.Int() % len(o.customers)
-		if ok := o.db.InsertTask(t, customers[r].Id()); ok != nil {
+		if ok := o.db.InsertTask(t, customers[r].(*customer.Customer).Account.Id()); ok != nil {
 			log.Fatalln(ok)
 		}
 		customers[r].(*customer.Customer).AddTask(t)

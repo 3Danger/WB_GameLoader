@@ -16,6 +16,10 @@ func (o *Operator) Tasks(w http.ResponseWriter, r *http.Request) {
 		if ok := json.NewDecoder(r.Body).Decode(&t); ok != nil {
 			writeError(w, ok.Error(), http.StatusBadRequest)
 		} else {
+			if len(o.customers) == 0 {
+				writeError(w, "customers not found", http.StatusConflict)
+				return
+			}
 			o.AddTasks(t.Tasks...)
 			writeResult(w, "success")
 		}
