@@ -18,6 +18,7 @@ const (
 
 type IAccount interface {
 	Login() string
+	ToModel() interface{}
 }
 
 type Operator struct {

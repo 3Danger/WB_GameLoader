@@ -17,5 +17,5 @@ func (o *Operator) Me(w http.ResponseWriter, r *http.Request) {
 		writeError(w, ok.Error(), http.StatusUnauthorized)
 		return
 	}
-	writeData(w, o.GetUser(acc.Login), http.StatusOK)
+	writeData(w, o.GetUser(acc.Login).ToModel(), http.StatusOK)
 }

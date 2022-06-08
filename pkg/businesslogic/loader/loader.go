@@ -11,12 +11,16 @@ import (
 type Loader struct {
 	*wallet.Wallet
 	*account.Account
+	id             int
 	tasks          map[string]*task.Task
 	maxWeightTrans float32 //5-30kg
 	salary         float32 //ЗП
 	fatigue        float32 //усталость
 	drunk          bool
 }
+
+func (l *Loader) Id() int      { return l.id }
+func (l *Loader) SetId(id int) { l.id = id }
 
 func (l *Loader) Tasks() map[string]*task.Task {
 	return l.tasks
