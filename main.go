@@ -4,7 +4,6 @@ import (
 	"GameLoaders/pkg/httpserv/database"
 	"GameLoaders/pkg/httpserv/handler"
 	"GameLoaders/pkg/httpserv/server"
-	"github.com/jackc/pgx"
 	"github.com/spf13/viper"
 	"log"
 	"math/rand"
@@ -21,32 +20,23 @@ func init() {
 func initConfig() (ok error) {
 	viper.AddConfigPath("./configs/")
 	viper.SetConfigType("yml")
-	viper.SetConfigName("server")
+	viper.SetConfigName("config")
 	return viper.ReadInConfig()
-}
-
-func cleanDataBaseDEBUG() {
-	db := database.NewDB()
-	defer db.Close()
-	var row *pgx.Rows
-	row, _ = db.Connection().Query("DELETE FROM tasks")
-	row.Close()
-	row, _ = db.Connection().Query("DELETE FROM loader")
-	row.Close()
-	row, _ = db.Connection().Query("DELETE FROM customer")
-	row.Close()
-	row, _ = db.Connection().Query("DELETE FROM account")
-	row.Close()
 }
 
 func main() {
 	var ok error
-	//cleanDataBaseDEBUG()
-	db := database.NewDB()
+
+	config := new(database.ConfigDB)
+	if ok = viper.Unmarshal(config); ok != nil {
+		log.Fatalln(ok)
+	}
+	db := database.NewDB(config)
 	defer db.Close()
+
 	op := handler.NewOperator(db)
-	ok = (&server.Server{}).Run(viper.GetString("port"), op.GetRoute())
-	if ok != nil {
+	serv := server.NewServer(viper.GetString("serverPort"), op.GetRoute())
+	if ok = serv.Run(); ok != nil {
 		log.Fatalln(ok)
 	}
 }
