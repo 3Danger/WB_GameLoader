@@ -32,9 +32,9 @@ func (o *Operator) Register(w http.ResponseWriter, r *http.Request) {
 		IssuedAt:  time.Now().Unix(),
 	}
 	if acc.IsCustomer {
-		o.AddCustomer(customer.NewCustomerRand(account.NewAccount(0, acc.Name, acc.Login, acc.Password)))
+		o.AddCustomer(customer.NewCustomerRand(account.NewAccount(0, acc.Login, acc.Password)))
 	} else {
-		o.AddLoader(loader.NewLoaderRand(account.NewAccount(0, acc.Name, acc.Login, acc.Password)))
+		o.AddLoader(loader.NewLoaderRand(account.NewAccount(0, acc.Login, acc.Password)))
 	}
 	writeResult(w, "success")
 }

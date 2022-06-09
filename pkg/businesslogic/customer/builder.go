@@ -13,7 +13,12 @@ type Builder struct {
 }
 
 func NewCustomerBuilder() *Builder {
-	return &Builder{new(Customer)}
+	return &Builder{
+		&Customer{
+			tasks:   make([]*task.Task, 0, 10),
+			loaders: make([]*loader.Loader, 0, 10),
+		},
+	}
 }
 
 func (b *Builder) AddAccount(acc *account.Account) *Builder {
@@ -21,12 +26,14 @@ func (b *Builder) AddAccount(acc *account.Account) *Builder {
 	return b
 }
 
+func (b *Builder) SetId(id int) { b.customer.SetId(id) }
+
 func (b *Builder) AddWallet(wallet *wallet.Wallet) *Builder {
 	b.customer.Wallet = wallet
 	return b
 }
 
-func (b *Builder) AddTask(task ...*task.Task) *Builder {
+func (b *Builder) AddTasks(task ...*task.Task) *Builder {
 	b.customer.tasks = append(b.customer.tasks, task...)
 	return b
 }
@@ -46,3 +53,5 @@ func (b *Builder) Build() (*Customer, error) {
 	}
 	return customer, nil
 }
+
+func (b *Builder) Customer() *Customer { return b.customer }

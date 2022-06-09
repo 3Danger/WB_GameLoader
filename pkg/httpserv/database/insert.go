@@ -7,6 +7,7 @@ import (
 	"GameLoaders/pkg/businesslogic/task"
 	"github.com/jackc/pgx"
 	"log"
+	"strconv"
 )
 
 func (d *DB) InsertLoader(l *loader.Loader) (ok error) {
@@ -52,10 +53,18 @@ func (d *DB) InsertCustomer(c *customer.Customer) (ok error) {
 func (d *DB) InsertTask(t *task.Task, account_id int) (ok error) {
 	var query string
 	var rows *pgx.Rows
+	var id int
 
-	query = `INSERT INTO tasks (account_id, name, weight) VALUES ($1, $2, $3)`
+	query = `INSERT INTO tasks (account_id, name, weight) VALUES ($1, $2, $3) RETURNING id`
 	rows, ok = d.connect.Query(query, account_id, t.Name, t.Weight)
-	rows.Close()
+	defer rows.Close()
+	if rows.Next() {
+		ok = rows.Scan(&id)
+		if ok != nil {
+			log.Fatalln(ok)
+		}
+		t.Id = strconv.Itoa(id)
+	}
 	return ok
 }
 

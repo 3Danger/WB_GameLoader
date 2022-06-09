@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"GameLoaders/pkg/businesslogic/account"
 	"GameLoaders/pkg/businesslogic/customer"
 	"GameLoaders/pkg/businesslogic/loader"
 	"GameLoaders/pkg/businesslogic/task"
@@ -27,10 +28,14 @@ type IAccount interface {
 
 type Operator struct {
 	sync.RWMutex
-	customers map[string]IAccount
-	loaders   map[string]IAccount
-	tasks     []*task.Task
-	db        *database.DB
+	//key = login
+	accounts map[string]*account.Account
+	//key = ID
+	customers map[int]IAccount
+	//key = ID
+	loaders map[int]IAccount
+	tasks   []*task.Task
+	db      *database.DB
 }
 
 func (o *Operator) GetRoute() *http.ServeMux {
@@ -44,30 +49,50 @@ func (o *Operator) GetRoute() *http.ServeMux {
 }
 
 func NewOperator(db *database.DB) *Operator {
+	accounts := make(map[string]*account.Account)
+	customers := make(map[int]IAccount)
+	loaders := make(map[int]IAccount)
+	aviableTasks := db.LoadTasks(0)
+
+	for _, v := range db.LoadCustomers() {
+		customers[v.Account.Id()] = v
+		accounts[v.Account.Login()] = v.Account
+	}
+	for _, v := range db.LoadLoaders() {
+		loaders[v.Account.Id()] = v
+		accounts[v.Account.Login()] = v.Account
+	}
+	for _, v := range loaders {
+		if c, ok := customers[v.(*loader.Loader).CustomerAccountId()]; ok {
+			c.(*customer.Customer).HireLoader(v.(*loader.Loader))
+		}
+	}
 	return &Operator{
-		customers: make(map[string]IAccount),
-		loaders:   make(map[string]IAccount),
-		tasks:     make([]*task.Task, 0),
+		accounts:  accounts,
+		customers: customers,
+		loaders:   loaders,
+		tasks:     aviableTasks,
 		db:        db,
 	}
 }
 
-func (o *Operator) GetUser(key string) IAccount {
+func (o *Operator) GetUser(login string) IAccount {
 	o.RLock()
-	user, ok := o.customers[key]
-	if !ok {
-		user, ok = o.loaders[key]
+	defer o.RUnlock()
+	user, ok := o.accounts[login]
+	if ok {
+		if cstmr, ok := o.customers[user.Id()]; ok {
+			return cstmr
+		} else {
+			return o.loaders[user.Id()]
+		}
 	}
-	o.RUnlock()
-	return user
+	return nil
 }
 
 func (o *Operator) HasLogin(login string) bool {
 	o.RLock()
-	_, ok := o.customers[login]
-	if !ok {
-		_, ok = o.loaders[login]
-	}
+	_, ok := o.accounts[login]
 	o.RUnlock()
 	return ok
 }
@@ -77,7 +102,8 @@ func (o *Operator) AddLoader(l *loader.Loader) {
 		log.Fatalln(ok)
 	}
 	o.Lock()
-	o.loaders[l.Login()] = l
+	o.accounts[l.Account.Login()] = l.Account
+	o.loaders[l.Account.Id()] = l
 	o.Unlock()
 }
 func (o *Operator) AddCustomer(c *customer.Customer) {
@@ -85,7 +111,8 @@ func (o *Operator) AddCustomer(c *customer.Customer) {
 		log.Fatalln(ok)
 	}
 	o.Lock()
-	o.customers[c.Login()] = c
+	o.accounts[c.Account.Login()] = c.Account
+	o.customers[c.Account.Id()] = c
 	o.Unlock()
 }
 
@@ -100,7 +127,7 @@ func (o *Operator) AddTasks(tasks ...*task.Task) {
 		if ok := o.db.InsertTask(t, customers[r].(*customer.Customer).Account.Id()); ok != nil {
 			log.Fatalln(ok)
 		}
-		customers[r].(*customer.Customer).AddTask(t)
+		customers[r].(*customer.Customer).AddTasks(t)
 	}
 	o.Lock()
 	o.tasks = append(o.tasks, tasks...)

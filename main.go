@@ -4,7 +4,6 @@ import (
 	"GameLoaders/pkg/httpserv/database"
 	"GameLoaders/pkg/httpserv/handler"
 	"GameLoaders/pkg/httpserv/server"
-	"github.com/jackc/pgx"
 	"github.com/spf13/viper"
 	"log"
 	"math/rand"
@@ -20,15 +19,15 @@ func main() {
 	db := database.NewDB()
 	defer db.Close()
 
-	var row *pgx.Rows
-	row, ok = db.Connection().Query("DELETE FROM tasks")
-	row.Close()
-	row, ok = db.Connection().Query("DELETE FROM loader")
-	row.Close()
-	row, ok = db.Connection().Query("DELETE FROM customer")
-	row.Close()
-	row, ok = db.Connection().Query("DELETE FROM account")
-	row.Close()
+	//var row *pgx.Rows
+	//row, ok = db.Connection().Query("DELETE FROM tasks")
+	//row.Close()
+	//row, ok = db.Connection().Query("DELETE FROM loader")
+	//row.Close()
+	//row, ok = db.Connection().Query("DELETE FROM customer")
+	//row.Close()
+	//row, ok = db.Connection().Query("DELETE FROM account")
+	//row.Close()
 
 	op := handler.NewOperator(db)
 	ok = (&server.Server{}).Run("8080", op.GetRoute())

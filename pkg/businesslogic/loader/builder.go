@@ -12,7 +12,7 @@ type Builder struct {
 }
 
 func NewLoaderBuilder() *Builder {
-	return &Builder{new(Loader)}
+	return &Builder{&Loader{tasks: make(map[string]*task.Task)}}
 }
 
 func (lb *Builder) AddAccount(acc *account.Account) *Builder {
@@ -32,7 +32,9 @@ func (lb *Builder) AddTasks(task ...*task.Task) *Builder {
 	return lb
 }
 
-func (lb *Builder) AddParams(maxWeightTrans, salary, fatigue float32, drunk bool) *Builder {
+func (lb *Builder) AddParams(id, customerId int, maxWeightTrans, salary, fatigue float32, drunk bool) *Builder {
+	lb.loader.id = id
+	lb.loader.customer_id = customerId
 	lb.loader.maxWeightTrans = maxWeightTrans
 	lb.loader.salary = salary
 	lb.loader.fatigue = fatigue
@@ -55,4 +57,8 @@ func (lb *Builder) Build() (*Loader, error) {
 		return nil, errors.New("salary can't be zero")
 	}
 	return loader, nil
+}
+
+func (lb *Builder) Loader() *Loader {
+	return lb.loader
 }

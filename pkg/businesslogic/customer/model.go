@@ -13,7 +13,7 @@ type Model struct {
 
 //ToModel me - показать свои характеристики (деньги, зарегистрировавшиеся грузчики)
 func (c *Customer) ToModel() interface{} {
-	var loaderModel []interface{}
+	loaderModel := make([]interface{}, 0)
 	for _, v := range c.loaders {
 		loaderModel = append(loaderModel, v.ToModel())
 	}

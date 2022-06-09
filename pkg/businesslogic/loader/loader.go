@@ -11,13 +11,21 @@ import (
 type Loader struct {
 	*wallet.Wallet
 	*account.Account
-	id             int
-	tasks          map[string]*task.Task
-	maxWeightTrans float32 //5-30kg
-	salary         float32 //ЗП
-	fatigue        float32 //усталость
-	drunk          bool
+	id                 int
+	customer_id        int
+	custommerAccountId int
+	tasks              map[string]*task.Task
+	maxWeightTrans     float32 //5-30kg
+	salary             float32 //ЗП
+	fatigue            float32 //усталость
+	drunk              bool
 }
+
+func (l *Loader) CustomerId() int       { return l.customer_id }
+func (l *Loader) SetCustomerId(cid int) { l.customer_id = cid }
+
+func (l *Loader) CustomerAccountId() int        { return l.custommerAccountId }
+func (l *Loader) SetCustomerAccountId(caid int) { l.custommerAccountId = caid }
 
 func (l *Loader) Id() int      { return l.id }
 func (l *Loader) SetId(id int) { l.id = id }
@@ -77,12 +85,18 @@ func (l *Loader) Unload(task *task.Task) error {
 	// (вес*(100 - усталость/100)*(пьянство/100))
 	canMoveWeight := l.CanMoveWeight()
 	if canMoveWeight <= 0. {
-		return errors.New(l.Name() + " is very tired")
+		return errors.New(l.Login() + " is very tired")
 	}
 	task.Unload(canMoveWeight)
-	if _, ok := l.tasks[task.Name]; !ok {
-		l.tasks[task.Name] = task
+	if _, ok := l.tasks[task.Id]; !ok {
+		l.tasks[task.Id] = task
 	}
 	l.fatigue += 0.2
 	return nil
+}
+
+func (l *Loader) AddTask(tasks ...*task.Task) {
+	for _, v := range tasks {
+		l.tasks[v.Id] = v
+	}
 }

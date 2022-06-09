@@ -9,13 +9,12 @@ type IAccount interface {
 
 type Account struct {
 	id       int
-	name     string
 	login    string
 	password string
 }
 
-func NewAccount(id int, name, username, password string) *Account {
-	return &Account{id, name, username, password}
+func NewAccount(id int, username, password string) *Account {
+	return &Account{id, username, password}
 }
 
 func (a *Account) SetId(id int) {
@@ -26,13 +25,13 @@ func (a Account) Id() int {
 	return a.id
 }
 
-func (a Account) Name() string {
-	return a.name
-}
+func (a *Account) SetLogin(login string) { a.login = login }
 
 func (a Account) Login() string {
 	return a.login
 }
+
+func (a *Account) SetPassword(password string) { a.password = password }
 
 func (a Account) Password() string {
 	return a.password

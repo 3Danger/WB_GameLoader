@@ -30,9 +30,9 @@ func (c *Customer) Tasks() []*task.Task {
 	return c.tasks
 }
 
-func (c *Customer) AddTask(task *task.Task) *Customer {
+func (c *Customer) AddTasks(task ...*task.Task) *Customer {
 	c.Lock()
-	c.tasks = append(c.tasks, task)
+	c.tasks = append(c.tasks, task...)
 	c.Unlock()
 	return c
 }

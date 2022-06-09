@@ -2,7 +2,6 @@ package loader
 
 type Model struct {
 	Id    int    `json:"id"`
-	Name  string `json:"name"`
 	Login string `json:"login"`
 
 	MaxWeight float32 `json:"max_weight"`
@@ -15,7 +14,6 @@ type Model struct {
 func (l *Loader) ToModel() interface{} {
 	return &Model{
 		Id:        l.Id(),
-		Name:      l.Name(),
 		Login:     l.Login(),
 		MaxWeight: l.MaxWeightTrans(),
 		Money:     l.Wallet.GetInfo(),
