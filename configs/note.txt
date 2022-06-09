@@ -1,5 +1,4 @@
-https://habr.com/ru/post/254425/
-
+//https://habr.com/ru/post/254425/
 
 CREATE TABLE account
 (

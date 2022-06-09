@@ -63,7 +63,7 @@ func NewLoaderRand(account *account.Account) *Loader {
 		Wallet:         wallet.NewWallet(0),
 		tasks:          make(map[string]*task.Task),
 		maxWeightTrans: rand.Float32()*25 + 5,
-		salary:         rand.Float32()*20 + 10,
+		salary:         rand.Float32()*20_000 + 10_000,
 		fatigue:        0.0,
 		drunk:          drunk,
 	}

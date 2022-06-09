@@ -18,23 +18,23 @@ type Result struct {
 
 func writeError(w http.ResponseWriter, msg string, status int) {
 	w.Header().Set("content-type", "application/json; charset=utf-8")
-	defer w.WriteHeader(status)
 	bt, _ := json.Marshal(Error{msg})
 	if _, ok := w.Write(bt); ok != nil {
-		status = 501
+		w.WriteHeader(500)
 		log.Fatalln(ok)
 	}
+	w.WriteHeader(status)
 }
 
 func writeResult(w http.ResponseWriter, msg string) {
 	w.Header().Set("content-type", "application/json; charset=utf-8")
 	var status = http.StatusOK
-	defer w.WriteHeader(status)
 	bt, _ := json.Marshal(Result{msg})
 	if _, ok := w.Write(bt); ok != nil {
-		status = 501
+		w.WriteHeader(500)
 		log.Fatalln(ok)
 	}
+	w.WriteHeader(status)
 }
 
 func writeData(w http.ResponseWriter, data interface{}, status int) {
