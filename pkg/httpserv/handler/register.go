@@ -22,7 +22,6 @@ func (o *Operator) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if o.HasLogin(acc.Login) {
-		//TODO уточнить код ошибки
 		writeError(w, "login: \""+acc.Login+"\" already use", 418)
 		return
 	}

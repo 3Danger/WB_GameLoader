@@ -5,7 +5,6 @@ import (
 	"GameLoaders/pkg/businesslogic/loader"
 	"GameLoaders/pkg/businesslogic/task"
 	"net/http"
-	"reflect"
 )
 
 func howMuchNeedLoaders(tasksPtrs []*task.Task, loadersPtrs []*loader.Loader) int {
@@ -48,12 +47,12 @@ func (o *Operator) Start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	iaccount := o.GetUser(acc.Login)
-	if reflect.ValueOf(iaccount).IsNil() {
+	user := o.GetUser(acc.Login)
+	if user == IAccount(nil) {
 		writeError(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	cstmr, isCustomer := iaccount.(*customer.Customer)
+	cstmr, isCustomer := user.(*customer.Customer)
 	if !isCustomer {
 		writeError(w, "forbidden for loaders", http.StatusForbidden)
 		return

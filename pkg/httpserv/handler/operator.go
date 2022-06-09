@@ -22,6 +22,7 @@ const (
 type IAccount interface {
 	Id() int
 	Login() string
+	Password() string
 	ToModel() interface{}
 	Tasks() []*task.Task
 }

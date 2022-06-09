@@ -23,15 +23,15 @@ func (o *Operator) Tasks(w http.ResponseWriter, r *http.Request) {
 				writeResult(w, "success")
 			}
 		}
-		return
-	}
-	if r.Method == http.MethodGet {
+	} else if r.Method == http.MethodGet {
 		acc, ok := parseToken(r.Header.Get("Authorization"))
 		if ok != nil {
 			writeError(w, ok.Error(), http.StatusBadRequest)
-			return
+		} else if user := o.GetUser(acc.Login); user == IAccount(nil) {
+			writeError(w, "Unauthorized", http.StatusUnauthorized)
+		} else {
+			writeData(w, user.Tasks(), http.StatusOK)
 		}
-		writeData(w, o.GetUser(acc.Login).Tasks(), http.StatusOK)
-		return
 	}
+	return
 }

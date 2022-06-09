@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+type Token struct {
+	DataOfToken string `json:"token"`
+}
+
 func (o *Operator) Login(w http.ResponseWriter, r *http.Request) {
 	var ok error
 	var acc *ClaimsAccount
@@ -19,13 +23,12 @@ func (o *Operator) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !o.HasLogin(acc.Login) {
+	if user := o.GetUser(acc.Login); user == IAccount(nil) {
 		writeError(w, "account: "+acc.Login+" not found", http.StatusBadRequest)
-		return
+	} else if generatePasswordHash(acc.Password) != user.Password() {
+		writeError(w, "password invalid", http.StatusBadGateway)
+	} else {
+		sign, _ := acc.generateToken()
+		writeData(w, Token{sign}, http.StatusOK)
 	}
-	sign, _ := acc.generateToken()
-
-	writeData(w, struct {
-		Token string `json:"token"`
-	}{sign}, http.StatusOK)
 }
